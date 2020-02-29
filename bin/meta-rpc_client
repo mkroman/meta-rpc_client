@@ -1,0 +1,72 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require 'optparse'
+
+require 'oj'
+
+require_relative '../lib/meta/rpc'
+
+ENV_SHARED_SECRET = 'META_SHARED_SECRET'
+
+# This error is raised when the user doesn't provide a shared secret.
+class MissingSharedSecretError < StandardError; end
+
+options = {
+  secret: ENV[ENV_SHARED_SECRET]
+}
+
+parser = OptionParser.new do |opts|
+  opts.banner = "Usage: #{$PROGRAM_NAME} <method> [args]"
+
+  opts.on '-v', '--[no]verbose', 'Run verbosely' do |v|
+    options[:verbose] = v
+  end
+
+  opts.on '-h', '--help', 'Show this help message' do
+    puts opts
+    exit 1
+  end
+
+  opts.on '-s=SECRET' do |secret|
+    options[:secret] = if secret == '-'
+                         $stdin.gets
+                       else
+                         secret
+                       end
+  end
+end
+
+parser.parse!
+
+if ARGV.count < 2
+  puts parser
+  exit 1
+end
+
+if options[:secret].nil?
+  raise 'Shared key missing - specify a shared secret using either the ' \
+        'argument `-s <shared_secret>` or by setting the environment ' \
+        "variable `#{ENV_SHARED_SECRET}=<shared_secret>`"
+end
+
+method = ARGV[0]
+params = ARGV[1]
+
+# Attempt to deserialize the params as JSON.
+begin
+  params = Oj.load params
+rescue Oj::ParseError => e
+  puts 'Unable to parse the given params - it must be valid JSON!'
+
+  raise e
+end
+
+begin
+  client = Meta::RPC::Client.new 'tcp://localhost:31337', options[:secret]
+rescue Meta::RPC::SharedSecretError => e
+  raise e
+end
+
+client.connect
+p client.call method, params
