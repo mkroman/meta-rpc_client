@@ -9,13 +9,18 @@ jobs:
       # Restore Bundle cache
       - restore_cache:
           keys:
-            - meta-rpc_client-bundle-{{ checksum 'Gemfile.lock' }}
+            - meta-rpc_client-bundle-{{ checksum "Gemfile.lock" }}
+      - run:
+          name: Install dependencies
+          command: |
+            sudo apt update
+            sudo apt install -y libsodium23
       - run:
           name: Bundle Install
           command: bundle check --path vendor/bundle || bundle install --deployment
       # Store Bundle cache
       - save_cache:
-          key: meta-rpc_client-bundle-{{ checksum 'Gemfile.lock' }}
+          key: meta-rpc_client-bundle-{{ checksum "Gemfile.lock" }}
           paths:
             - vendor/bundle
       - run:
