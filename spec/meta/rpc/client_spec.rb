@@ -27,7 +27,18 @@ RSpec.describe Meta::RPC::Client do
   end
 
   describe '#call' do
-    it 'should send data to the connection'
-    it 'should read the response'
+    it 'should send data to the connection' do
+      allow(subject).to receive :read_response
+      expect_any_instance_of(Meta::RPC::Connection).to receive :send
+
+      subject.call 'test', 'a' => 'b'
+    end
+
+    it 'should read the response' do
+      allow_any_instance_of(Meta::RPC::Connection).to receive :send
+      expect(subject).to receive :read_response
+
+      subject.call 'test', 'a' => 'b'
+    end
   end
 end

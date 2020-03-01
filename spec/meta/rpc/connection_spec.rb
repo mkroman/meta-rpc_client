@@ -3,13 +3,34 @@
 require_relative '../../spec_helper'
 
 RSpec.describe Meta::RPC::Connection do
+  let(:host) { 'localhost' }
+  let(:port) { 31_337 }
+
+  subject do
+    Meta::RPC::Connection.new host, port
+  end
+
+
   describe '#new' do
-    it 'should have a host'
-    it 'should have a port'
+    it 'should have a host' do
+      expect(subject.host).to eq host
+    end
+
+    it 'should have a port' do
+      expect(subject.port).to eq port
+    end
+
+    it 'should not be connected' do
+      expect(subject.connected?).to be false
+    end
   end
 
   describe '#connect' do
-    it 'should open a tcp connection'
+    it 'should open a tcp connection' do
+      expect(TCPSocket).to receive(:open).and_return double closed?: false
+
+      subject.connect
+    end
   end
 
   describe '#send' do
