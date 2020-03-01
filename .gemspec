@@ -1,7 +1,7 @@
 #!/usr/bin/gem build
 # frozen_string_literal: true
 
-require_relative './lib/meta/rpc'
+require_relative './lib/meta/rpc/version'
 
 Gem::Specification.new do |spec|
   spec.name     = 'meta-rpc_client'
